@@ -561,14 +561,18 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
       <!-- FILE UPLOAD -->
       <div class="field">
         <label>Attach File (PDF / Image)</label>
+        <input type="file" id="fileInput" accept=".pdf,image/*" style="display:none" onchange="handleFile(this.files[0])">
         <div class="upload-zone" id="uploadZone"
           ondragover="event.preventDefault();this.classList.add('drag')"
           ondragleave="this.classList.remove('drag')"
           ondrop="handleDrop(event)">
-          <input type="file" id="fileInput" accept=".pdf,image/*" onchange="handleFile(this.files[0])">
           <div class="uz-ico">📎</div>
-          <p><strong>Tap to attach</strong> or drag & drop</p>
+          <p><strong>Browse or drag & drop a file</strong></p>
           <p class="uz-sub">PDF, JPG, PNG — max 10 MB</p>
+          <button type="button" onclick="document.getElementById('fileInput').click()"
+            style="margin-top:.7rem;background:var(--gold);color:#0d1b2a;border:none;border-radius:8px;padding:.5rem 1.3rem;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;">
+            📁 Browse Files
+          </button>
         </div>
         <div class="file-preview" id="filePreview" style="display:none">
           <div class="fp-ico" id="fpIco">📄</div>
