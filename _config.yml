@@ -1,0 +1,7 @@
+# GitHub Pages config
+title: Family Vault
+description: Private family document organiser
+theme: null
+plugins: []
+exclude:
+  - sw.js
