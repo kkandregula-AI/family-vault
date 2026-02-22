@@ -813,6 +813,12 @@ const HARDCODED_CLIENT_ID = '639675930352-kbjneusm429kp075dapmlfa8lvo8cs4s.apps.
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 let V = { members: [], docs: [] };           // vault metadata
+// Pre-load from storage immediately — so data is ready even before PIN entry
+// This ensures returning to app after backgrounding doesn't lose data
+try {
+  const _r = localStorage.getItem(SK) || localStorage.getItem(SK + '_bak');
+  if (_r) { const _p = JSON.parse(_r); if (_p && (_p.docs || _p.members)) V = _p; }
+} catch(e) {}
 let DB = null;                                 // IndexedDB
 let gToken = null;                             // Google access token
 let gDriveFolderId = null;                     // "Family Vault" folder on Drive
@@ -877,18 +883,43 @@ async function deleteFile(docId) {
 //  DATA
 // ═══════════════════════════════════════════════════════════
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
-function saveData() { try { localStorage.setItem(SK, JSON.stringify(V)); } catch(e){} }
+function saveData() {
+  try {
+    const json = JSON.stringify(V);
+    localStorage.setItem(SK, json);
+    // Also keep a redundant backup key so we can recover if primary gets corrupted
+    localStorage.setItem(SK + '_bak', json);
+  } catch(e) { console.warn('saveData failed:', e); }
+}
+
 function loadData() {
   try {
-    const r = localStorage.getItem(SK);
-    if (r) V = JSON.parse(r);
+    let r = localStorage.getItem(SK);
+    // If primary is missing or corrupt, try backup
+    if (!r) r = localStorage.getItem(SK + '_bak');
+    if (r) {
+      const parsed = JSON.parse(r);
+      // Only replace V if parsed data looks valid
+      if (parsed && (Array.isArray(parsed.docs) || Array.isArray(parsed.members))) {
+        V = parsed;
+      }
+    }
     if (!Array.isArray(V.members)) V.members = [];
     if (!Array.isArray(V.docs)) V.docs = [];
     if (!Array.isArray(V.categories)) V.categories = [];
-    // Restore custom categories into CAT_FOLDERS
-    V.categories.forEach(c=>{ CAT_FOLDERS[c.id]=c.label; });
-    if (!V.members.length) { V.members.push({ id: uid(), name: 'Self', relation: 'Self', dob: '' }); saveData(); }
-  } catch(e) { V = { members: [], docs: [] }; }
+    V.categories.forEach(c => { CAT_FOLDERS[c.id] = c.label; });
+    if (!V.members.length) {
+      V.members.push({ id: uid(), name: 'Self', relation: 'Self', dob: '' });
+      saveData();
+    }
+  } catch(e) {
+    // Parse error — try backup before giving up
+    try {
+      const bak = localStorage.getItem(SK + '_bak');
+      if (bak) { V = JSON.parse(bak); return loadData(); }
+    } catch(e2) {}
+    console.warn('loadData failed, keeping existing V:', e);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2277,6 +2308,32 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 
 // ─── PWA ───────────────────────────────────────────────────
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});}
+
+// ── Re-load data when returning to app after being backgrounded ──
+// On mobile, browser may unload the page when switching apps.
+// When user comes back, we reload data from localStorage so nothing is lost.
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    // Reload data from storage in case page was partially unloaded
+    const appVisible = document.getElementById('app').classList.contains('on');
+    loadData();
+    if (appVisible) {
+      // App was unlocked — just refresh the view with restored data
+      renderAll();
+    }
+    // If lock screen is showing, PIN entry will call boot() which loads data anyway
+  }
+});
+
+// pageshow fires when page is restored from bfcache (back/forward cache)
+// persisted=true means it was served from cache, not a fresh load
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+    loadData();
+    const appVisible = document.getElementById('app').classList.contains('on');
+    if (appVisible) renderAll();
+  }
+});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferInstall=e;});
 window.addEventListener('appinstalled',()=>{deferInstall=null;toast('✅ App installed!');});
 window.addEventListener('load',handleOAuthCallback);
