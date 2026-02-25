@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Family Vault</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1b2a;
+    color: #c8d8e8;
+    line-height: 1.7;
+    padding: 0 1rem 4rem;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  header {
+    padding: 2.5rem 0 2rem;
+    border-bottom: 1px solid rgba(200,151,63,.2);
+    margin-bottom: 2rem;
+  }
+  .logo { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
+  .logo-icon { font-size: 2rem; }
+  .logo-name { font-size: 1.4rem; font-weight: 700; color: #c8973f; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: .3rem; }
+  .updated { font-size: .82rem; color: #6a8aaa; }
+  h2 {
+    font-size: 1.05rem; font-weight: 700;
+    color: #c8973f; margin: 2rem 0 .6rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid rgba(200,151,63,.15);
+  }
+  p { margin-bottom: .85rem; font-size: .93rem; color: #a8c0d8; }
+  ul { margin: 0 0 .85rem 1.2rem; }
+  li { font-size: .93rem; color: #a8c0d8; margin-bottom: .3rem; }
+  .highlight {
+    background: rgba(200,151,63,.08);
+    border-left: 3px solid #c8973f;
+    border-radius: 0 8px 8px 0;
+    padding: .8rem 1rem;
+    margin: 1rem 0;
+    font-size: .9rem;
+    color: #c8d8e8;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(72,187,120,.15);
+    color: #48bb78;
+    border-radius: 6px;
+    padding: .15rem .5rem;
+    font-size: .78rem;
+    font-weight: 700;
+    margin-left: .4rem;
+    vertical-align: middle;
+  }
+  a { color: #c8973f; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,.07);
+    font-size: .8rem;
+    color: #4a6a8a;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-name">Family Vault</span>
+    </div>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: February 2026 &nbsp;·&nbsp; Built by Krishnamurthy Kandregula</div>
+  </header>
+
+  <div class="highlight">
+    <strong>Summary:</strong> Family Vault stores all your documents privately on your own device and/or your own Google Drive account. We do not collect, store, or have access to any of your personal data or documents.
+  </div>
+
+  <h2>1. What Family Vault Is</h2>
+  <p>Family Vault is a free, open-source Progressive Web App (PWA) that helps individuals and families securely store and organise important documents such as passports, medical records, financial documents, and legal papers.</p>
+  <p>The app runs entirely in your browser. There is no server, no backend, and no central database.</p>
+
+  <h2>2. Data Storage <span class="badge">Your device only</span></h2>
+  <p>All data you enter into Family Vault is stored in one or more of the following locations — all of which are under your direct control:</p>
+  <ul>
+    <li><strong>Browser storage (localStorage / IndexedDB)</strong> — stored locally on your device, inside your browser</li>
+    <li><strong>Your Google Drive account</strong> — if you choose to connect Google Drive, files are saved directly to your personal Drive. Only you have access.</li>
+    <li><strong>A folder on your device</strong> — if you link a local folder (Android/PC), files are saved there directly</li>
+  </ul>
+  <p>The app developer has <strong>no access</strong> to any of this data at any time.</p>
+
+  <h2>3. Google Drive Integration</h2>
+  <p>Family Vault can optionally connect to Google Drive to back up your documents. When you connect Google Drive:</p>
+  <ul>
+    <li>You authorise the app using your own Google account via Google's secure OAuth 2.0 sign-in</li>
+    <li>Files are saved to a "Family Vault" folder inside <strong>your own</strong> Google Drive</li>
+    <li>The app only requests permission to manage files it creates — it cannot access any other files in your Drive</li>
+    <li>Your Google credentials are never stored by the app — only a temporary access token held in your browser session</li>
+    <li>You can disconnect Google Drive at any time from Settings</li>
+  </ul>
+  <p>Google Drive usage is governed by <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</p>
+
+  <h2>4. Data We Do NOT Collect</h2>
+  <p>Family Vault does not collect, transmit, or share any of the following:</p>
+  <ul>
+    <li>Personal information (name, email, phone number)</li>
+    <li>Document contents or metadata</li>
+    <li>Usage analytics or behavioural data</li>
+    <li>Device identifiers</li>
+    <li>Location data</li>
+    <li>Cookies (no tracking cookies of any kind)</li>
+  </ul>
+
+  <h2>5. PIN &amp; Security</h2>
+  <p>The PIN you set to lock the app is stored only on your device as a one-way encoded value. It is never transmitted anywhere. The secret word used for PIN recovery is similarly stored only on your device.</p>
+
+  <h2>6. Third-Party Services</h2>
+  <p>The app uses the following third-party services:</p>
+  <ul>
+    <li><strong>Google Fonts</strong> — for typography (Nunito, Libre Baskerville). Font files are loaded from Google's CDN.</li>
+    <li><strong>Google OAuth 2.0</strong> — only when you choose to connect Google Drive</li>
+    <li><strong>Google Drive API</strong> — only when you choose to connect Google Drive</li>
+  </ul>
+  <p>No other third-party services, analytics platforms, or advertising networks are used.</p>
+
+  <h2>7. Children's Privacy</h2>
+  <p>Family Vault does not knowingly collect any information from children. The app is a document storage tool intended for adults managing family records.</p>
+
+  <h2>8. Data Deletion</h2>
+  <p>To delete all your data:</p>
+  <ul>
+    <li><strong>Browser data:</strong> Clear your browser's site data for this app, or uninstall the PWA</li>
+    <li><strong>Google Drive data:</strong> Delete the "Family Vault" folder from your Google Drive</li>
+    <li><strong>Device folder:</strong> Delete the linked folder from your phone's file manager</li>
+  </ul>
+
+  <h2>9. Open Source</h2>
+  <p>Family Vault is open source. You can review the complete source code at:<br>
+  <a href="https://github.com/kkandregula-AI/family-vault" target="_blank">github.com/kkandregula-AI/family-vault</a></p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>If this privacy policy changes, the updated version will be published at this URL with a new "Last updated" date.</p>
+
+  <h2>11. Contact</h2>
+  <p>If you have any questions about this privacy policy or the app, please open an issue on the GitHub repository.</p>
+
+  <footer>
+    Family Vault &nbsp;·&nbsp; Free &amp; Open Source &nbsp;·&nbsp; No ads &nbsp;·&nbsp; No data collection<br>
+    <span style="color:#4a6a8a">Built by Krishnamurthy Kandregula</span><br>
+    <span style="color:#4a6a8a">Built with the assistance of <a href="https://claude.ai" target="_blank" style="color:#c8a96e;text-decoration:none">Claude AI</a> by Anthropic</span>
+  </footer>
+
+</div>
+</body>
+</html>
