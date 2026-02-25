@@ -558,28 +558,28 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
       <!-- Slide 3 -->
       <div class="ob-slide" id="ob2" style="display:none">
         <div style="text-align:center;margin-bottom:2rem">
-          <div style="font-size:5rem;margin-bottom:1rem">☁️</div>
+          <div style="font-size:5rem;margin-bottom:1rem">💾</div>
           <h2 style="font-family:'Libre Baskerville',serif;font-size:1.5rem;color:var(--gold2);margin-bottom:.75rem">Choose How to<br>Back Up Your Data</h2>
           <p style="font-size:.92rem;color:var(--text2);line-height:1.6">Your documents are always saved on this device. Add a backup so you never lose them.</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:.6rem">
           <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
-            <span style="font-size:1.5rem">☁️</span>
-            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Google Drive</div>
-            <div style="font-size:.75rem;color:var(--text3)">Access from any device, anywhere</div></div>
-          </div>
-          <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
             <span style="font-size:1.5rem">📁</span>
-            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Device Folder</div>
-            <div style="font-size:.75rem;color:var(--text3)">Files in your phone's storage (Android)</div></div>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Device Folder <span style="font-size:.7rem;color:var(--teal);font-weight:600">Android / PC</span></div>
+            <div style="font-size:.75rem;color:var(--text3)">Auto-saves files to a folder on your phone — visible in your Files app. Works offline.</div></div>
           </div>
           <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
             <span style="font-size:1.5rem">📦</span>
-            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">ZIP Backup</div>
-            <div style="font-size:.75rem;color:var(--text3)">Download anytime — great for iPhone</div></div>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">ZIP Backup <span style="font-size:.7rem;color:var(--gold2);font-weight:600">iPhone / Android / PC</span></div>
+            <div style="font-size:.75rem;color:var(--text3)">Download all your documents as a single ZIP file anytime. Save to iCloud, Files app, Google Drive or email yourself.</div></div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center;opacity:.7">
+            <span style="font-size:1.5rem">☁️</span>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Google Drive <span style="font-size:.7rem;color:var(--amber);font-weight:600">Invite only</span></div>
+            <div style="font-size:.75rem;color:var(--text3)">Syncs to your Google Drive account. Contact the app owner to be added.</div></div>
           </div>
         </div>
-        <p style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:.85rem">You can set this up later in Settings</p>
+        <p style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:.85rem">You can set this up anytime in Settings ⚙️</p>
       </div>
 
     </div><!-- /slides -->
@@ -825,8 +825,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
   <line x1="149" y1="153" x2="152" y2="157" stroke="#0d1b2a" stroke-width="2.2" stroke-linecap="round"/>
   <line x1="152" y1="157" x2="159" y2="149" stroke="#0d1b2a" stroke-width="2.2" stroke-linecap="round"/>
 </svg>Family Vault</div>
-    <button class="topbar-sync sync-noauth" id="syncBtn" onclick="handleSyncClick()">
-      <span id="syncIco">☁</span> <span id="syncTxt">Connect Drive</span>
+    <button class="topbar-sync sync-noauth" id="syncBtn" onclick="handleSyncClick()" title="Google Drive sync — invitation only">
+      <span id="syncIco">☁</span> <span id="syncTxt">Drive (invite only)</span>
     </button>
     <button class="ib" onclick="lockApp()" title="Lock">🔒</button>
   </div>
@@ -1571,7 +1571,7 @@ function updateSyncUI() {
   const txt = document.getElementById('syncTxt');
   if (!gToken) {
     btn.className = 'topbar-sync sync-noauth';
-    ico.textContent = '☁'; txt.textContent = 'Connect Drive';
+    ico.textContent = '☁'; txt.textContent = 'Drive (invite only)';
   } else if (syncing) {
     btn.className = 'topbar-sync sync-ing';
     ico.textContent = '🔄'; txt.textContent = 'Syncing…';
@@ -1782,7 +1782,7 @@ function renderHome() {
 
   const gStatus = gToken
     ? `<div class="gdrive-status gds-conn">✅ Google Drive connected · ${synced} file${synced!==1?'s':''} synced</div>`
-    : `<div class="gdrive-status gds-disc" onclick="handleSyncClick()">⚠️ Google Drive not connected — tap to connect</div>`;
+    : `<div class="gdrive-status gds-disc" onclick="handleSyncClick()">☁️ Google Drive optional — tap to connect (invite only)</div>`;
 
   TM = getTM();
   const typeData = Object.entries(TM).map(([t,{icon,label}])=>[t,icon,label]);
@@ -1922,7 +1922,7 @@ function renderSettings(){
   const driveStatus = gToken ? '✅ Connected to Google Drive' : '☁️ Not Connected';
   const driveDesc = gToken
     ? 'Your documents are syncing to your personal Google Drive automatically. Each document type gets its own folder.'
-    : 'Tap "Connect Drive" in the top bar to sign in with your Google account. Your files will sync to your own private Google Drive.';
+    : '⚠️ Google Drive sync is currently available by invitation only. If you have been invited, tap Sign In below. Otherwise — no worries! Use Device Folder (Android) or ZIP Backup instead. Both work perfectly without internet.';
 
   // Drive folder list
   const driveFolderRows = Object.entries(CAT_FOLDERS).map(function(entry) {
@@ -1954,7 +1954,7 @@ function renderSettings(){
     +   '<div style="font-size:.73rem;color:var(--text3)">Syncs to your personal Drive account</div></div>'
     +   (storageMode==='drive' ? '<span style="font-size:.7rem;background:rgba(72,187,120,.15);color:#48bb78;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
     + '</div>'
-    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your Google Drive. Access from any device. Requires internet to sync.</p>'
+    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your Google Drive. Access from any device. Requires internet to sync.<br><span style="color:var(--amber);font-size:.73rem">⚠️ Currently available by invitation only. Contact the app owner to be added.</span></p>'
     + (gToken
       ? '<button class="btn-f btn-sec" onclick="manualSync()">🔄 Sync Now</button><button class="btn-f btn-sec" onclick="disconnectDrive()" style="margin-top:.4rem;color:var(--rose)">Disconnect Drive</button>'
       : '<button class="btn-f btn-gdrive" onclick="gdriveAuth()">Sign in with Google Drive</button>')
@@ -1970,7 +1970,7 @@ function renderSettings(){
       +   '<div style="font-size:.73rem;color:var(--text3)">Saves files directly to your phone storage</div></div>'
       +   (storageMode==='folder' ? '<span style="font-size:.7rem;background:rgba(56,178,172,.15);color:#38b2ac;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
       + '</div>'
-      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your phone — visible in your Files app. Auto-saves every time you add a document. Works offline.</p>'
+      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders directly on your Android phone — visible in your Files app. Auto-saves every time you add a document. Works fully offline. <strong style="color:var(--teal)">You choose the folder — it\'s completely personal to your device.</strong></p>'
       + '<div style="font-size:.72rem;background:rgba(56,178,172,.08);border-radius:8px;padding:.5rem .7rem;margin-bottom:.6rem;color:var(--teal);line-height:1.5">'
       +   '📂 Saves as: <strong>Family Vault / Passport-ID / file.pdf</strong>'
       + '</div>'
@@ -1987,10 +1987,13 @@ function renderSettings(){
       + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
       +   '<div style="font-size:1.3rem">🍎</div>'
       +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Browser Storage</div>'
-      +   '<div style="font-size:.73rem;color:var(--text3)">Stored in Safari on this iPhone</div></div>'
+      +   '<div style="font-size:.73rem;color:var(--text3)">Stored in Safari/Chrome on this device</div></div>'
       +   (storageMode==='browser' ? '<span style="font-size:.7rem;background:rgba(74,127,212,.15);color:#4a9fd4;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
       + '</div>'
-      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Data is stored in Safari\'s local storage. <strong style="color:var(--rose)">Warning:</strong> clearing Safari data or reinstalling will erase everything. Always keep a Google Drive or ZIP backup.</p>'
+      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Data is stored in Safari/Chrome\'s local storage on this device. <strong style="color:var(--rose)">Warning:</strong> clearing browser data or reinstalling will erase everything.</p>'
+      + '<div style="background:rgba(200,151,63,.07);border-radius:8px;padding:.6rem .75rem;font-size:.76rem;color:var(--gold2);line-height:1.5">'
+      +   '📦 <strong>iPhone tip:</strong> Use the ZIP Backup below regularly to save a copy to your iCloud, Files app, or email — this is your safety net!'
+      + '</div>'
       + '</div>'
     : '';
 
@@ -2002,7 +2005,9 @@ function renderSettings(){
     +   '<div style="font-size:.73rem;color:var(--text3)">Download everything as a single file</div></div>'
     + '</div>'
     + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">'
-    + (isIOS ? 'Save to iCloud, Files app, or email to yourself. Best safety net for iPhone users.' : 'Great for moving to a new device or keeping an offline copy on a USB drive.')
+    + (isIOS
+      ? '📱 <strong>iPhone:</strong> Download ZIP → save to iCloud, Files app, or email to yourself. This is your most reliable backup option.'
+      : '🤖 <strong>Android/PC:</strong> Download ZIP anytime as an extra backup. Great for moving to a new device or keeping an offline copy.')
     + '</p>'
     + '<button class="btn-f btn-prim" onclick="downloadZIP()">📦 Download ZIP Backup</button>'
     + '<button class="btn-f btn-sec" onclick="document.getElementById(\'importZipInput\').click()" style="margin-top:.4rem">📥 Restore from ZIP</button>'
@@ -2040,7 +2045,7 @@ function renderSettings(){
 
     // Platform label
     +   '<div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">'
-    +   (isIOS ? '🍎 iPhone — Choose your backup method' : '🤖 Android — Choose your storage method')
+    +   (isIOS ? '🍎 iPhone — Recommended: ZIP Backup to iCloud or Files app' : '🤖 Android — Recommended: Link a Device Folder on your phone')
     +   '</div>'
 
     +   driveOption
@@ -2213,7 +2218,7 @@ async function viewDoc(id){
   }
   const syncStatus=d.synced
     ?`<div class="sync-row"><span class="sr-ico">✅</span><div class="sr-text"><strong>Synced to Google Drive</strong><br>File is safely stored in your Drive</div>${d.driveLink?`<a href="${d.driveLink}" target="_blank" style="font-size:.72rem;color:var(--sky);white-space:nowrap">Open ↗</a>`:''}</div>`
-    :(d.hasFile?`<div class="sync-row"><span class="sr-ico">⏳</span><div class="sr-text"><strong>Not yet synced</strong><br>Connect Drive to upload</div><button onclick="manualSync()" style="font-size:.72rem;background:var(--gold-d);color:var(--gold2);border:1px solid rgba(200,151,63,.3);padding:.2rem .6rem;border-radius:6px;cursor:pointer;white-space:nowrap">Sync Now</button></div>`:'');
+    :(d.hasFile?`<div class="sync-row"><span class="sr-ico">💾</span><div class="sr-text"><strong>Saved locally</strong><br>Google Drive sync available by invitation only</div></div>`:'');
   const fileBtn=d.hasFile?`<button class="file-view-btn" onclick="openLocalFile('${d.id}')">📎 View Attached File — ${d.fileName||'file'}</button>`:'';
   document.getElementById('vsTitle').textContent=d.name;
   document.getElementById('vsBody').innerHTML=`
@@ -2600,18 +2605,18 @@ function showBackupNudge() {
     animation:slideUp .3s ease;
   `;
   el.innerHTML = `
-    <div style="font-size:.8rem;font-weight:700;color:var(--gold2);margin-bottom:.3rem">💾 No backup set up</div>
+    <div style="font-size:.8rem;font-weight:700;color:var(--gold2);margin-bottom:.3rem">💾 No backup set up yet</div>
     <div style="font-size:.75rem;color:var(--text2);margin-bottom:.7rem;line-height:1.5">
       ${isIOS
-        ? 'Your data is in browser storage. Download a ZIP backup so you don\'t lose it if you clear Safari.'
-        : 'Link a device folder so your vault auto-saves. Or connect Google Drive for cloud backup.'
+        ? '📱 iPhone tip: Your data is in browser storage. Download a ZIP backup and save it to iCloud or Files app so you don\'t lose it if you clear Safari/Chrome.'
+        : '🤖 Android tip: Link a folder on your phone so your vault auto-saves there automatically. Or download a ZIP backup anytime.'
       }
     </div>
     <div style="display:flex;gap:.5rem">
       ${isIOS
         ? `<button onclick="downloadZIP();dismissNudge()" style="flex:1;padding:.5rem;border-radius:8px;background:var(--teal);color:#fff;border:none;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">📦 Download ZIP</button>`
         : `<button onclick="linkDeviceFolder();dismissNudge()" style="flex:1;padding:.5rem;border-radius:8px;background:var(--teal);color:#fff;border:none;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">📁 Link Folder</button>
-           <button onclick="handleSyncClick();dismissNudge()" style="flex:1;padding:.5rem;border-radius:8px;background:var(--gold);color:#0d1b2a;border:none;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">☁ Drive</button>`
+           <button onclick="downloadZIP();dismissNudge()" style="flex:1;padding:.5rem;border-radius:8px;background:var(--gold);color:#0d1b2a;border:none;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">📦 ZIP</button>`
       }
       <button onclick="dismissNudge()" style="padding:.5rem .75rem;border-radius:8px;background:var(--bg);color:var(--text3);border:1px solid var(--border2);font-family:'Nunito',sans-serif;font-size:.78rem;cursor:pointer">Later</button>
     </div>
@@ -3223,4 +3228,5 @@ async function shareDoc(docId) {
 </script>
 </body>
 </html>
+
 
