@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FamilyVault">
 <meta name="description" content="Family Vault — private document organiser for your family. Stores documents locally on your device.">
-<meta name="author" content="Family Vault App">
+<meta name="author" content="Krishnamurthy Kandregula">
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
@@ -419,6 +419,17 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
 
 /* ── VIEW DOC ─────────────────────────────── */
 .vdoc-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1.1rem}
+/* Onboarding */
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(200,151,63,.25);transition:all .3s}
+.ob-dot.active{width:24px;border-radius:4px;background:#c8973f}
+.ob-slide{animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* Global search bar on home */
+.gsearch-wrap{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border2);border-radius:11px;padding:.55rem .85rem;margin-bottom:.9rem}
+.gsearch-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:.88rem}
+.gsearch-wrap input::placeholder{color:var(--text3)}
+/* Share button */
+.share-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;background:var(--teal-d);color:var(--teal);border:1px solid rgba(56,178,172,.25);border-radius:9px;padding:.55rem .9rem;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;width:100%;margin-top:.5rem}
 .vdoc-icon{font-size:2.5rem}
 .vdoc-title{font-size:1rem;font-weight:700;color:var(--text)}
 .vdoc-sub{font-size:.75rem;color:var(--text3)}
@@ -480,6 +491,113 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
 </style>
 </head>
 <body>
+
+
+<!-- ONBOARDING SCREEN -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;z-index:9000;background:#0d1b2a;overflow-y:auto">
+  <div style="max-width:420px;margin:0 auto;padding:env(safe-area-inset-top) 1.5rem 2rem;min-height:100dvh;display:flex;flex-direction:column">
+
+    <!-- Skip -->
+    <div style="display:flex;justify-content:flex-end;padding-top:max(1rem,env(safe-area-inset-top))">
+      <button onclick="finishOnboarding()" style="background:none;border:none;color:var(--text3);font-family:'Nunito',sans-serif;font-size:.82rem;cursor:pointer;padding:.3rem .5rem">Skip →</button>
+    </div>
+
+    <!-- Slides -->
+    <div id="obSlides" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+
+      <!-- Slide 1 -->
+      <div class="ob-slide" id="ob0">
+        <div style="text-align:center;margin-bottom:2rem">
+          <div style="font-size:5rem;margin-bottom:1rem">🏠</div>
+          <h2 style="font-family:'Libre Baskerville',serif;font-size:1.6rem;color:var(--gold2);margin-bottom:.75rem">Welcome to<br>Family Vault</h2>
+          <p style="font-size:.92rem;color:var(--text2);line-height:1.6">Your private, secure space to store and organise important family documents — passports, medical records, financial papers and more.</p>
+        </div>
+        <div style="background:var(--card);border-radius:14px;padding:1rem 1.2rem">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem">
+            <span style="font-size:1.3rem">🔐</span>
+            <span style="font-size:.85rem;color:var(--text2)">Protected by your personal PIN</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem">
+            <span style="font-size:1.3rem">📴</span>
+            <span style="font-size:.85rem;color:var(--text2)">Works completely offline</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <span style="font-size:1.3rem">🔒</span>
+            <span style="font-size:.85rem;color:var(--text2)">No data ever leaves your device without your permission</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="ob-slide" id="ob1" style="display:none">
+        <div style="text-align:center;margin-bottom:2rem">
+          <div style="font-size:5rem;margin-bottom:1rem">👨‍👩‍👧</div>
+          <h2 style="font-family:'Libre Baskerville',serif;font-size:1.5rem;color:var(--gold2);margin-bottom:.75rem">One Vault for<br>Your Whole Family</h2>
+          <p style="font-size:.92rem;color:var(--text2);line-height:1.6">Add family members and store each person's documents separately — all in one place, organised by category.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;text-align:center">
+            <div style="font-size:1.6rem;margin-bottom:.3rem">🪪</div>
+            <div style="font-size:.78rem;color:var(--text2)">Passport / ID</div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;text-align:center">
+            <div style="font-size:1.6rem;margin-bottom:.3rem">🏥</div>
+            <div style="font-size:.78rem;color:var(--text2)">Medical</div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;text-align:center">
+            <div style="font-size:1.6rem;margin-bottom:.3rem">💰</div>
+            <div style="font-size:.78rem;color:var(--text2)">Financial</div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;text-align:center">
+            <div style="font-size:1.6rem;margin-bottom:.3rem">⚖️</div>
+            <div style="font-size:.78rem;color:var(--text2)">Legal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="ob-slide" id="ob2" style="display:none">
+        <div style="text-align:center;margin-bottom:2rem">
+          <div style="font-size:5rem;margin-bottom:1rem">☁️</div>
+          <h2 style="font-family:'Libre Baskerville',serif;font-size:1.5rem;color:var(--gold2);margin-bottom:.75rem">Choose How to<br>Back Up Your Data</h2>
+          <p style="font-size:.92rem;color:var(--text2);line-height:1.6">Your documents are always saved on this device. Add a backup so you never lose them.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
+            <span style="font-size:1.5rem">☁️</span>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Google Drive</div>
+            <div style="font-size:.75rem;color:var(--text3)">Access from any device, anywhere</div></div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
+            <span style="font-size:1.5rem">📁</span>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">Device Folder</div>
+            <div style="font-size:.75rem;color:var(--text3)">Files in your phone's storage (Android)</div></div>
+          </div>
+          <div style="background:var(--card);border-radius:12px;padding:.9rem;display:flex;gap:.75rem;align-items:center">
+            <span style="font-size:1.5rem">📦</span>
+            <div><div style="font-size:.85rem;font-weight:700;color:var(--text)">ZIP Backup</div>
+            <div style="font-size:.75rem;color:var(--text3)">Download anytime — great for iPhone</div></div>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:.85rem">You can set this up later in Settings</p>
+      </div>
+
+    </div><!-- /slides -->
+
+    <!-- Dots + Button -->
+    <div style="padding-top:1.5rem">
+      <div id="obDots" style="display:flex;justify-content:center;gap:.5rem;margin-bottom:1.2rem">
+        <div class="ob-dot active" id="dot0"></div>
+        <div class="ob-dot" id="dot1"></div>
+        <div class="ob-dot" id="dot2"></div>
+      </div>
+      <button id="obBtn" onclick="obNext()" style="width:100%;padding:.9rem;border-radius:12px;background:linear-gradient(135deg,#c8973f,#a06820);color:#0d1b2a;border:none;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
+        Get Started →
+      </button>
+    </div>
+
+  </div>
+</div>
 
 <!-- LOCK SCREEN -->
 <div id="lock">
@@ -813,11 +931,18 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);-web
           ondrop="handleDrop(event)">
           <div style="font-size:1.8rem;margin-bottom:.3rem">📎</div>
           <p style="font-size:.78rem;color:var(--text2);margin-bottom:.5rem">Attach a scan, photo or PDF of this document</p>
-          <button type="button"
-            onclick="document.getElementById('fileInput').click()"
-            style="background:var(--gold);color:#0d1b2a;border:none;border-radius:8px;padding:.55rem 1.5rem;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;width:100%">
-            📁 Browse & Attach File
-          </button>
+          <div style="display:flex;gap:.5rem">
+            <button type="button"
+              onclick="document.getElementById('fileInput').click()"
+              style="flex:1;background:var(--gold);color:#0d1b2a;border:none;border-radius:8px;padding:.55rem .5rem;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">
+              📁 Browse File
+            </button>
+            <button type="button"
+              onclick="openCamera()"
+              style="flex:1;background:var(--teal-d);color:var(--teal);border:1px solid rgba(56,178,172,.3);border-radius:8px;padding:.55rem .5rem;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">
+              📷 Take Photo
+            </button>
+          </div>
           <p style="font-size:.68rem;color:var(--text3);margin-top:.4rem">PDF, JPG, PNG — max 10 MB</p>
         </div>
       </div>
@@ -962,6 +1087,7 @@ const SK = 'fvault3';
 const PK = 'fvault3_pin';
 const CID_KEY = 'fvault3_cid';
 const SK_SECRET = 'fvault3_secret'; // secret word for forgot PIN
+const SK_ONBOARD = 'fvault3_onboarded'; // onboarding complete flag
 // ─── PASTE YOUR GOOGLE CLIENT ID HERE ONCE ───────────────
 const HARDCODED_CLIENT_ID = '639675930352-kbjneusm429kp075dapmlfa8lvo8cs4s.apps.googleusercontent.com';
 // ─────────────────────────────────────────────────────────
@@ -976,6 +1102,16 @@ try {
 } catch(e) {}
 let DB = null;                                 // IndexedDB
 let gToken = null;                             // Google access token
+
+function disconnectDrive() {
+  if (!confirm('Disconnect Google Drive? Your local data stays safe.')) return;
+  gToken = null;
+  sessionStorage.removeItem('gtoken');
+  storageMode = localFolderHandle ? 'folder' : 'browser';
+  updateSyncUI();
+  renderAll();
+  toast('🔌 Google Drive disconnected');
+}
 let gDriveFolderId = null;                     // "Family Vault" folder on Drive
 let currentView = 'home';
 let editId = null;
@@ -1247,7 +1383,6 @@ async function boot() {
   await detectStorageMode();
   document.getElementById('lock').style.display = 'none';
   document.getElementById('app').classList.add('on');
-  // Reset lock screen state
   pin = ''; pinFirst = ''; pinMode = 'unlock'; upd();
   document.getElementById('pok').disabled = true;
   document.getElementById('lerr').textContent = '';
@@ -1260,6 +1395,10 @@ async function boot() {
   document.getElementById('forgotBtn').style.display = localStorage.getItem(PK) ? 'block' : 'none';
   restoreGDriveState();
   renderAll();
+  // Show onboarding only for brand new users (first ever boot)
+  if (!localStorage.getItem(SK_ONBOARD)) {
+    setTimeout(() => showOnboarding(), 300);
+  }
 }
 
 function lockApp() {
@@ -1654,6 +1793,10 @@ function renderHome() {
       <p>${V.docs.length} document${V.docs.length!==1?'s':''} · ${V.members.length} member${V.members.length!==1?'s':''}</p>
       ${gStatus}
     </div>
+    <div class="gsearch-wrap">
+      <span style="font-size:1rem;color:var(--text3)">🔍</span>
+      <input type="search" placeholder="Search documents, members, categories…" onkeydown="if(event.key==='Enter')globalSearch(this.value)" oninput="if(this.value.length>2)globalSearch(this.value)">
+    </div>
     <div class="s4">
       <div class="tile"><div class="ico2" style="background:var(--gold-d)">📁</div><div><div class="tl">Total Docs</div><div class="tv">${V.docs.length}</div></div></div>
       <div class="tile"><div class="ico2" style="background:var(--teal-d)">👨‍👩‍👧</div><div><div class="tl">Members</div><div class="tv">${V.members.length}</div></div></div>
@@ -1789,7 +1932,9 @@ function renderSettings(){
     return '<div class="inforow"><span class="il">' + icon + ' ' + name + '</span><span class="iv">' + cnt + ' file' + (cnt!==1?'s':'') + ' synced</span></div>';
   }).join('');
 
-  // Storage mode icon and label
+  // ── Storage section — platform specific ──────────────────
+
+  // Active storage status bar
   const storageIcon = storageMode==='drive' ? '☁️' : storageMode==='folder' ? '📁' : '💾';
   const storageLabel = getStorageModeLabel();
   let storageSubtitle;
@@ -1798,29 +1943,70 @@ function renderSettings(){
   } else if (storageMode==='folder') {
     storageSubtitle = 'Last save: ' + (V.lastLocalSave ? new Date(V.lastLocalSave).toLocaleString() : 'Not yet');
   } else {
-    storageSubtitle = isIOS ? 'Data is in Safari browser storage' : 'Data is in browser storage — link a folder for auto-backup';
+    storageSubtitle = isIOS ? '⚠️ No backup set up — choose an option below' : '⚠️ No backup set up — choose an option below';
   }
 
-  // Device folder section (Android/PC only)
-  let folderSection = '';
+  // ── Option 1: Google Drive (both platforms) ───────────────
+  const driveOption = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='drive' ? 'rgba(200,151,63,.5)' : 'rgba(255,255,255,.06)') + '">'
+    + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+    +   '<div style="font-size:1.3rem">☁️</div>'
+    +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Google Drive</div>'
+    +   '<div style="font-size:.73rem;color:var(--text3)">Syncs to your personal Drive account</div></div>'
+    +   (storageMode==='drive' ? '<span style="font-size:.7rem;background:rgba(72,187,120,.15);color:#48bb78;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
+    + '</div>'
+    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your Google Drive. Access from any device. Requires internet to sync.</p>'
+    + (gToken
+      ? '<button class="btn-f btn-sec" onclick="manualSync()">🔄 Sync Now</button><button class="btn-f btn-sec" onclick="disconnectDrive()" style="margin-top:.4rem;color:var(--rose)">Disconnect Drive</button>'
+      : '<button class="btn-f btn-gdrive" onclick="gdriveAuth()">Sign in with Google Drive</button>')
+    + '</div>';
+
+  // ── Option 2: Local Device Folder (Android only) ──────────
+  let folderOption = '';
   if (!isIOS) {
-    const folderDesc = storageMode==='folder'
-      ? 'Your vault auto-saves to your linked folder whenever you add or edit documents.'
-      : 'Link a folder on your phone or PC — vault will auto-save there every time you make changes.';
-    const folderBtns = storageMode==='folder'
-      ? '<button class="btn-f btn-sec" onclick="writeVaultToFolder(localFolderHandle,true)">🔄 Sync to Folder Now</button><button class="btn-f btn-sec" onclick="unlinkLocalFolder()" style="margin-top:.4rem;color:var(--rose)">🔓 Unlink Folder</button>'
-      : '<button class="btn-f btn-prim" onclick="linkDeviceFolder()" style="background:var(--teal)">📁 Link Device Folder</button>';
-    folderSection = '<div style="background:var(--bg);border-radius:10px;padding:.75rem;margin-bottom:.75rem">'
-      + '<div style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📁 Device Folder</div>'
-      + '<p style="font-size:.78rem;color:var(--text2);margin-bottom:.6rem;line-height:1.4">' + folderDesc + '</p>'
-      + folderBtns
+    folderOption = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='folder' ? 'rgba(56,178,172,.5)' : 'rgba(255,255,255,.06)') + '">'
+      + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+      +   '<div style="font-size:1.3rem">📁</div>'
+      +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Device Folder</div>'
+      +   '<div style="font-size:.73rem;color:var(--text3)">Saves files directly to your phone storage</div></div>'
+      +   (storageMode==='folder' ? '<span style="font-size:.7rem;background:rgba(56,178,172,.15);color:#38b2ac;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
+      + '</div>'
+      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your phone — visible in your Files app. Auto-saves every time you add a document. Works offline.</p>'
+      + '<div style="font-size:.72rem;background:rgba(56,178,172,.08);border-radius:8px;padding:.5rem .7rem;margin-bottom:.6rem;color:var(--teal);line-height:1.5">'
+      +   '📂 Saves as: <strong>Family Vault / Passport-ID / file.pdf</strong>'
+      + '</div>'
+      + (storageMode==='folder'
+        ? '<button class="btn-f btn-sec" onclick="writeVaultToFolder(localFolderHandle,true)" style="background:rgba(56,178,172,.15);color:var(--teal);border-color:rgba(56,178,172,.3)">🔄 Sync to Folder Now</button>'
+          + '<button class="btn-f btn-sec" onclick="unlinkLocalFolder()" style="margin-top:.4rem;color:var(--rose)">🔓 Unlink Folder</button>'
+        : '<button class="btn-f btn-prim" onclick="linkDeviceFolder()" style="background:var(--teal)">📁 Link Device Folder</button>')
       + '</div>';
   }
 
-  // ZIP section desc
-  const zipDesc = isIOS
-    ? 'Download a full backup ZIP — includes all documents and files. Save it to iCloud, Files app, or send to yourself.'
-    : 'Download a full ZIP anytime. Great for moving to a new device or storing on a USB drive.';
+  // ── Option 3: Browser Storage info (iPhone fallback) ──────
+  const browserOption = isIOS
+    ? '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='browser' ? 'rgba(74,127,212,.4)' : 'rgba(255,255,255,.06)') + '">'
+      + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+      +   '<div style="font-size:1.3rem">🍎</div>'
+      +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Browser Storage</div>'
+      +   '<div style="font-size:.73rem;color:var(--text3)">Stored in Safari on this iPhone</div></div>'
+      +   (storageMode==='browser' ? '<span style="font-size:.7rem;background:rgba(74,127,212,.15);color:#4a9fd4;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
+      + '</div>'
+      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Data is stored in Safari\'s local storage. <strong style="color:var(--rose)">Warning:</strong> clearing Safari data or reinstalling will erase everything. Always keep a Google Drive or ZIP backup.</p>'
+      + '</div>'
+    : '';
+
+  // ── ZIP backup (always shown) ─────────────────────────────
+  const zipSection = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;border:1px solid rgba(255,255,255,.06)">'
+    + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+    +   '<div style="font-size:1.3rem">📦</div>'
+    +   '<div><div style="font-weight:700;font-size:.88rem;color:var(--text)">Manual ZIP Backup</div>'
+    +   '<div style="font-size:.73rem;color:var(--text3)">Download everything as a single file</div></div>'
+    + '</div>'
+    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">'
+    + (isIOS ? 'Save to iCloud, Files app, or email to yourself. Best safety net for iPhone users.' : 'Great for moving to a new device or keeping an offline copy on a USB drive.')
+    + '</p>'
+    + '<button class="btn-f btn-prim" onclick="downloadZIP()">📦 Download ZIP Backup</button>'
+    + '<button class="btn-f btn-sec" onclick="document.getElementById(\'importZipInput\').click()" style="margin-top:.4rem">📥 Restore from ZIP</button>'
+    + '</div>';
 
   // Vault stats
   const totalDocs = V.docs.length;
@@ -1842,11 +2028,35 @@ function renderSettings(){
     +   '<strong style="color:var(--text2)">Forgot PIN?</strong> tap the link on the lock screen — verified by your secret word.</p>'
     + '</div>'
 
-    + '<div class="sec-title">☁️ Google Drive</div>'
+    + '<div class="sec-title">💾 Storage &amp; Backup</div>'
+    + '<div class="bcard" style="border-color:rgba(56,178,172,.2)">'
+
+    // Active status banner
+    +   '<div style="display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;background:var(--bg);border-radius:10px;margin-bottom:.85rem">'
+    +     '<div style="font-size:1.2rem">' + storageIcon + '</div>'
+    +     '<div style="flex:1"><div style="font-size:.8rem;font-weight:700;color:var(--text)">Active: ' + storageLabel + '</div>'
+    +     '<div style="font-size:.72rem;color:' + (storageMode==='browser' ? 'var(--rose)' : 'var(--text3)') + '">' + storageSubtitle + '</div></div>'
+    +   '</div>'
+
+    // Platform label
+    +   '<div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">'
+    +   (isIOS ? '🍎 iPhone — Choose your backup method' : '🤖 Android — Choose your storage method')
+    +   '</div>'
+
+    +   driveOption
+    +   folderOption
+    +   browserOption
+
+    + '<div style="height:.1rem;background:rgba(255,255,255,.06);margin:.75rem 0"></div>'
+    +   zipSection
+    + '</div>'
+
+    + '<div class="sec-title">Vault Status</div>'
     + '<div class="bcard">'
-    +   '<h3>' + driveStatus + '</h3>'
-    +   '<p>' + driveDesc + '</p>'
-    +   driveBtn
+    +   '<div class="inforow"><span class="il">Total Documents</span><span class="iv">' + totalDocs + '</span></div>'
+    +   '<div class="inforow"><span class="il">Files with Attachments</span><span class="iv">' + withFiles + '</span></div>'
+    +   '<div class="inforow"><span class="il">Synced to Drive</span><span class="iv">' + synced + '</span></div>'
+    +   '<div class="inforow"><span class="il">Last Drive Sync</span><span class="iv">' + lastSync + '</span></div>'
     + '</div>'
 
     + '<div class="sec-title">📁 Drive Folder Structure</div>'
@@ -1855,36 +2065,31 @@ function renderSettings(){
     +   driveFolderRows
     + '</div>'
 
-    + '<div class="sec-title">Vault Status</div>'
-    + '<div class="bcard">'
-    +   '<div class="inforow"><span class="il">Total Documents</span><span class="iv">' + totalDocs + '</span></div>'
-    +   '<div class="inforow"><span class="il">Files with Attachments</span><span class="iv">' + withFiles + '</span></div>'
-    +   '<div class="inforow"><span class="il">Synced to Drive</span><span class="iv">' + synced + '</span></div>'
-    +   '<div class="inforow"><span class="il">Last Sync</span><span class="iv">' + lastSync + '</span></div>'
-    + '</div>'
-
-    + '<div class="sec-title">💾 Backup &amp; Storage</div>'
-    + '<div class="bcard" style="border-color:rgba(56,178,172,.25)">'
-    +   '<div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem">'
-    +     '<div style="width:42px;height:42px;border-radius:11px;background:var(--teal-d);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">' + storageIcon + '</div>'
-    +     '<div><div style="font-weight:700;font-size:.95rem">Active Backup: ' + storageLabel + '</div>'
-    +     '<div style="font-size:.75rem;color:var(--text3)">' + storageSubtitle + '</div></div>'
-    +   '</div>'
-    +   folderSection
-    +   '<div style="background:var(--bg);border-radius:10px;padding:.75rem">'
-    +     '<div style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📦 Manual ZIP Backup</div>'
-    +     '<p style="font-size:.78rem;color:var(--text2);margin-bottom:.6rem;line-height:1.4">' + zipDesc + '</p>'
-    +     '<button class="btn-f btn-prim" onclick="downloadZIP()">📦 Download Full ZIP Backup</button>'
-    +     '<button class="btn-f btn-sec" onclick="document.getElementById(\'importZipInput\').click()" style="margin-top:.4rem">📥 Restore from ZIP</button>'
-    +   '</div>'
-    + '</div>'
-
     + '<div class="sec-title">Import / Export</div>'
     + '<div class="bcard">'
     +   '<h3>📤 Export Metadata (JSON)</h3>'
     +   '<p>Download document info only — no attached files.</p>'
     +   '<button class="btn-f btn-sec" onclick="exportVault()">Download JSON</button>'
     +   '<button class="btn-f btn-sec" onclick="document.getElementById(\'importInput\').click()" style="margin-top:.4rem">📥 Restore from JSON</button>'
+    + '</div>'
+
+    + '<div style="text-align:center;padding:1.5rem 0 .5rem;font-size:.75rem;color:var(--text3);line-height:2">'
+    +   'Family Vault &nbsp;·&nbsp; Free &amp; Open Source<br>'
+    +   'No ads &nbsp;·&nbsp; No data collection &nbsp;·&nbsp; Your data stays yours<br>'
+    +   '<a href="privacy.html" target="_blank" style="color:var(--gold2);text-decoration:none">Privacy Policy</a>'
+    +   '<br><br>'
+    +   '<div style="background:var(--card);border-radius:12px;padding:.85rem 1.2rem;display:inline-block;margin-top:.3rem;border:1px solid rgba(200,151,63,.15)">'
+    +     '<div style="color:var(--text3);font-size:.72rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.08em">Designed &amp; Built by</div>'
+    +     '<div style="color:var(--gold2);font-weight:700;font-size:.95rem">Krishnamurthy Kandregula</div>'
+    +   '</div>'
+    +   '<br><br>'
+    +   '<div style="background:var(--card);border-radius:12px;padding:.85rem 1.2rem;margin-top:.3rem;border:1px solid rgba(100,160,255,.1)">'
+    +     '<div style="color:var(--text3);font-size:.72rem;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.08em">Built with the assistance of</div>'
+    +     '<div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:.4rem">'
+    +       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#c8a96e" opacity=".3"/><path d="M17.5 6.5C16 5 14.1 4 12 4 7.58 4 4 7.58 4 12c0 2.1 1 4 2.5 5.5L17.5 6.5z" fill="#c8a96e" opacity=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#c8a96e"/></svg>'
+    +       '<a href="https://claude.ai" target="_blank" style="color:#c8a96e;font-weight:700;font-size:.95rem;text-decoration:none">Claude AI by Anthropic</a>'
+    +     '</div>'
+    +   '</div>'
     + '</div>';
 }
 
@@ -2025,6 +2230,7 @@ async function viewDoc(id){
     </div>
     <div class="detail-acts">
       <button class="da-btn" onclick="editDoc('${d.id}')">✏️ Edit</button>
+      <button class="share-btn" onclick="shareDoc('${d.id}')">📤 Share</button>
       <button class="da-btn da-del" onclick="deleteDoc('${d.id}')">🗑 Delete</button>
     </div>`;
   os('viewSheet');
@@ -2879,6 +3085,142 @@ window.addEventListener('pageshow', function(e) {
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferInstall=e;});
 window.addEventListener('appinstalled',()=>{deferInstall=null;toast('✅ App installed!');});
 window.addEventListener('load',handleOAuthCallback);
+
+// ═══════════════════════════════════════════════════════════
+//  ONBOARDING
+// ═══════════════════════════════════════════════════════════
+let obSlide = 0;
+const OB_TOTAL = 3;
+
+function showOnboarding() {
+  document.getElementById('onboarding').style.display = 'block';
+  obSlide = 0;
+  updateObSlide();
+}
+
+function obNext() {
+  if (obSlide < OB_TOTAL - 1) {
+    obSlide++;
+    updateObSlide();
+  } else {
+    finishOnboarding();
+  }
+}
+
+function updateObSlide() {
+  for (let i = 0; i < OB_TOTAL; i++) {
+    const sl = document.getElementById('ob' + i);
+    const dt = document.getElementById('dot' + i);
+    if (sl) sl.style.display = i === obSlide ? 'block' : 'none';
+    if (dt) dt.classList.toggle('active', i === obSlide);
+  }
+  const btn = document.getElementById('obBtn');
+  if (btn) btn.textContent = obSlide === OB_TOTAL - 1 ? '✅ Get Started' : 'Next →';
+}
+
+function finishOnboarding() {
+  localStorage.setItem(SK_ONBOARD, '1');
+  const el = document.getElementById('onboarding');
+  if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.style.display = 'none', 300); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL SEARCH (Home screen)
+// ═══════════════════════════════════════════════════════════
+function globalSearch(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) return;
+  // Go to docs tab with search pre-filled
+  fType = ''; fMem = 'all';
+  sv('docs');
+  setTimeout(() => {
+    const input = document.getElementById('docSearch');
+    if (input) { input.value = q; renderDocs(); input.focus(); }
+  }, 80);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CAMERA CAPTURE
+// ═══════════════════════════════════════════════════════════
+function openCamera() {
+  // Create a hidden file input that opens camera directly
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.capture = 'environment'; // rear camera by default
+  inp.style.display = 'none';
+  inp.onchange = function() {
+    if (inp.files && inp.files[0]) {
+      handleFile(inp.files[0]);
+      toast('📷 Photo captured!');
+    }
+    inp.remove();
+  };
+  document.body.appendChild(inp);
+  inp.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DOCUMENT SHARING
+// ═══════════════════════════════════════════════════════════
+async function shareDoc(docId) {
+  const doc = V.docs.find(x => x.id === docId);
+  if (!doc) return;
+
+  // Build share text
+  const m = V.members.find(x => x.id === doc.memberId);
+  const tm = TM[doc.type] || TM.other;
+  let text = 'Family Vault — Document Details\n';
+  text += '─────────────────────────\n';
+  text += 'Document: ' + doc.name + '\n';
+  text += 'Category: ' + tm.label + '\n';
+  if (m) text += 'Member: ' + m.name + '\n';
+  if (doc.number) text += 'Number: ' + doc.number + '\n';
+  if (doc.expiry) text += 'Expiry: ' + fmt(doc.expiry) + '\n';
+  if (doc.issuer) text += 'Issued by: ' + doc.issuer + '\n';
+  if (doc.location) text += 'Location: ' + doc.location + '\n';
+  if (doc.notes) text += 'Notes: ' + doc.notes + '\n';
+
+  // Try sharing the file if available
+  if (doc.hasFile) {
+    const f = await getFile(docId);
+    if (f) {
+      try {
+        const bytes = atob(f.data);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        const blob = new Blob([arr], { type: f.type });
+        const file = new File([blob], f.name, { type: f.type });
+
+        // Try Web Share API with file
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: doc.name, text: text, files: [file] });
+          return;
+        }
+      } catch(e) { /* fall through to text share */ }
+    }
+  }
+
+  // Try Web Share API — text only
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: doc.name, text: text });
+      return;
+    } catch(e) {
+      if (e.name === 'AbortError') return; // user cancelled
+    }
+  }
+
+  // Final fallback — copy to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('📋 Document details copied to clipboard');
+  } catch(e) {
+    toast('⚠️ Sharing not supported on this browser');
+  }
+}
+
 </script>
 </body>
 </html>
+
