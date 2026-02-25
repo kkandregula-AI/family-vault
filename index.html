@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1124,7 +1124,10 @@ let syncing = false;
 //  STORAGE MODE — declared early so all render functions can use them
 // ═══════════════════════════════════════════════════════════
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const hasFSA = 'showDirectoryPicker' in window && !isIOS;
+const isAndroid = /Android/.test(navigator.userAgent);
+// hasFSA: true if File System Access API is available — Chrome on Android/PC
+// We don't gate the UI on this — we always show the button and handle gracefully
+const hasFSA = typeof window.showDirectoryPicker === 'function';
 let storageMode = 'browser';
 let localFolderHandle = null;
 function getStorageModeLabel() {
@@ -1181,6 +1184,10 @@ function saveData() {
     // Also keep a redundant backup key so we can recover if primary gets corrupted
     localStorage.setItem(SK + '_bak', json);
   } catch(e) { console.warn('saveData failed:', e); }
+  // Auto-write to device folder if linked — runs async in background
+  if (storageMode === 'folder' && localFolderHandle) {
+    writeVaultToFolder(localFolderHandle, false).catch(e => console.warn('Folder sync failed:', e));
+  }
 }
 
 function loadData() {
@@ -1932,9 +1939,8 @@ function renderSettings(){
     return '<div class="inforow"><span class="il">' + icon + ' ' + name + '</span><span class="iv">' + cnt + ' file' + (cnt!==1?'s':'') + ' synced</span></div>';
   }).join('');
 
-  // ── Storage section — platform specific ──────────────────
+  // ── Storage section — completely rebuilt ─────────────────
 
-  // Active storage status bar
   const storageIcon = storageMode==='drive' ? '☁️' : storageMode==='folder' ? '📁' : '💾';
   const storageLabel = getStorageModeLabel();
   let storageSubtitle;
@@ -1943,80 +1949,194 @@ function renderSettings(){
   } else if (storageMode==='folder') {
     storageSubtitle = 'Last save: ' + (V.lastLocalSave ? new Date(V.lastLocalSave).toLocaleString() : 'Not yet');
   } else {
-    storageSubtitle = isIOS ? '⚠️ No backup set up — choose an option below' : '⚠️ No backup set up — choose an option below';
+    storageSubtitle = '⚠️ Browser only — set up a backup below';
   }
-
-  // ── Option 1: Google Drive (both platforms) ───────────────
-  const driveOption = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='drive' ? 'rgba(200,151,63,.5)' : 'rgba(255,255,255,.06)') + '">'
-    + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
-    +   '<div style="font-size:1.3rem">☁️</div>'
-    +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Google Drive</div>'
-    +   '<div style="font-size:.73rem;color:var(--text3)">Syncs to your personal Drive account</div></div>'
-    +   (storageMode==='drive' ? '<span style="font-size:.7rem;background:rgba(72,187,120,.15);color:#48bb78;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
-    + '</div>'
-    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders on your Google Drive. Access from any device. Requires internet to sync.<br><span style="color:var(--amber);font-size:.73rem">⚠️ Currently available by invitation only. Contact the app owner to be added.</span></p>'
-    + (gToken
-      ? '<button class="btn-f btn-sec" onclick="manualSync()">🔄 Sync Now</button><button class="btn-f btn-sec" onclick="disconnectDrive()" style="margin-top:.4rem;color:var(--rose)">Disconnect Drive</button>'
-      : '<button class="btn-f btn-gdrive" onclick="gdriveAuth()">Sign in with Google Drive</button>')
-    + '</div>';
-
-  // ── Option 2: Local Device Folder (Android only) ──────────
-  let folderOption = '';
-  if (!isIOS) {
-    folderOption = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='folder' ? 'rgba(56,178,172,.5)' : 'rgba(255,255,255,.06)') + '">'
-      + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
-      +   '<div style="font-size:1.3rem">📁</div>'
-      +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Device Folder</div>'
-      +   '<div style="font-size:.73rem;color:var(--text3)">Saves files directly to your phone storage</div></div>'
-      +   (storageMode==='folder' ? '<span style="font-size:.7rem;background:rgba(56,178,172,.15);color:#38b2ac;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
-      + '</div>'
-      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Files saved in category folders directly on your Android phone — visible in your Files app. Auto-saves every time you add a document. Works fully offline. <strong style="color:var(--teal)">You choose the folder — it\'s completely personal to your device.</strong></p>'
-      + '<div style="font-size:.72rem;background:rgba(56,178,172,.08);border-radius:8px;padding:.5rem .7rem;margin-bottom:.6rem;color:var(--teal);line-height:1.5">'
-      +   '📂 Saves as: <strong>Family Vault / Passport-ID / file.pdf</strong>'
-      + '</div>'
-      + (storageMode==='folder'
-        ? '<button class="btn-f btn-sec" onclick="writeVaultToFolder(localFolderHandle,true)" style="background:rgba(56,178,172,.15);color:var(--teal);border-color:rgba(56,178,172,.3)">🔄 Sync to Folder Now</button>'
-          + '<button class="btn-f btn-sec" onclick="unlinkLocalFolder()" style="margin-top:.4rem;color:var(--rose)">🔓 Unlink Folder</button>'
-        : '<button class="btn-f btn-prim" onclick="linkDeviceFolder()" style="background:var(--teal)">📁 Link Device Folder</button>')
-      + '</div>';
-  }
-
-  // ── Option 3: Browser Storage info (iPhone fallback) ──────
-  const browserOption = isIOS
-    ? '<div style="background:var(--bg);border-radius:12px;padding:.9rem;margin-bottom:.75rem;border:1px solid ' + (storageMode==='browser' ? 'rgba(74,127,212,.4)' : 'rgba(255,255,255,.06)') + '">'
-      + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
-      +   '<div style="font-size:1.3rem">🍎</div>'
-      +   '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Browser Storage</div>'
-      +   '<div style="font-size:.73rem;color:var(--text3)">Stored in Safari/Chrome on this device</div></div>'
-      +   (storageMode==='browser' ? '<span style="font-size:.7rem;background:rgba(74,127,212,.15);color:#4a9fd4;border-radius:6px;padding:.2rem .5rem;font-weight:700">ACTIVE</span>' : '')
-      + '</div>'
-      + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">Data is stored in Safari/Chrome\'s local storage on this device. <strong style="color:var(--rose)">Warning:</strong> clearing browser data or reinstalling will erase everything.</p>'
-      + '<div style="background:rgba(200,151,63,.07);border-radius:8px;padding:.6rem .75rem;font-size:.76rem;color:var(--gold2);line-height:1.5">'
-      +   '📦 <strong>iPhone tip:</strong> Use the ZIP Backup below regularly to save a copy to your iCloud, Files app, or email — this is your safety net!'
-      + '</div>'
-      + '</div>'
-    : '';
-
-  // ── ZIP backup (always shown) ─────────────────────────────
-  const zipSection = '<div style="background:var(--bg);border-radius:12px;padding:.9rem;border:1px solid rgba(255,255,255,.06)">'
-    + '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
-    +   '<div style="font-size:1.3rem">📦</div>'
-    +   '<div><div style="font-weight:700;font-size:.88rem;color:var(--text)">Manual ZIP Backup</div>'
-    +   '<div style="font-size:.73rem;color:var(--text3)">Download everything as a single file</div></div>'
-    + '</div>'
-    + '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">'
-    + (isIOS
-      ? '📱 <strong>iPhone:</strong> Download ZIP → save to iCloud, Files app, or email to yourself. This is your most reliable backup option.'
-      : '🤖 <strong>Android/PC:</strong> Download ZIP anytime as an extra backup. Great for moving to a new device or keeping an offline copy.')
-    + '</p>'
-    + '<button class="btn-f btn-prim" onclick="downloadZIP()">📦 Download ZIP Backup</button>'
-    + '<button class="btn-f btn-sec" onclick="document.getElementById(\'importZipInput\').click()" style="margin-top:.4rem">📥 Restore from ZIP</button>'
-    + '</div>';
 
   // Vault stats
   const totalDocs = V.docs.length;
   const withFiles = V.docs.filter(function(d){ return d.hasFile; }).length;
   const synced = V.docs.filter(function(d){ return d.synced; }).length;
+
+  // ── Active status pill ────────────────────────────────────
+  const statusBar =
+    '<div style="display:flex;align-items:center;gap:.6rem;padding:.65rem .85rem;background:var(--bg);border-radius:10px;margin-bottom:1rem">'
+    + '<div style="font-size:1.2rem">' + storageIcon + '</div>'
+    + '<div style="flex:1">'
+    +   '<div style="font-size:.82rem;font-weight:700;color:var(--text)">Active Storage: ' + storageLabel + '</div>'
+    +   '<div style="font-size:.72rem;color:' + (storageMode==='browser'?'var(--rose)':'var(--text3)') + '">' + storageSubtitle + '</div>'
+    + '</div>'
+    + '</div>';
+
+  // ══ BOX 1: ANDROID (shown on all non-iOS devices) ════════
+  const folderActiveBadge = storageMode==='folder'
+    ? '<span style="font-size:.68rem;background:rgba(56,178,172,.2);color:#38b2ac;border-radius:6px;padding:.2rem .5rem;font-weight:700;flex-shrink:0">✓ ACTIVE</span>'
+    : '<span style="font-size:.68rem;background:rgba(200,151,63,.15);color:var(--gold2);border-radius:6px;padding:.2rem .5rem;font-weight:700;flex-shrink:0">RECOMMENDED</span>';
+  const browserActiveBadge = storageMode==='browser'
+    ? '<span style="font-size:.68rem;background:rgba(200,82,82,.15);color:var(--rose);border-radius:6px;padding:.2rem .5rem;font-weight:700;flex-shrink:0">⚠ ACTIVE</span>'
+    : '';
+  const driveActiveBadgeA = storageMode==='drive'
+    ? '<span style="font-size:.68rem;background:rgba(72,187,120,.15);color:#48bb78;border-radius:6px;padding:.2rem .5rem;font-weight:700">✓ ACTIVE</span>'
+    : '';
+  const folderName = localFolderHandle ? localFolderHandle.name : 'Linked folder';
+  const folderBtns = storageMode==='folder'
+    ? '<div style="background:rgba(56,178,172,.06);border-radius:8px;padding:.55rem .7rem;margin-bottom:.6rem;font-size:.75rem;color:var(--teal)">📂 Saving to: <strong>' + folderName + '</strong></div>'
+      + '<button class="btn-f btn-sec" onclick="writeVaultToFolder(localFolderHandle,true)" style="background:rgba(56,178,172,.12);color:var(--teal);border-color:rgba(56,178,172,.3);margin-bottom:.4rem">🔄 Sync to Folder Now</button>'
+      + '<button class="btn-f btn-sec" onclick="linkDeviceFolder()" style="margin-bottom:.4rem">📂 Change Folder</button>'
+      + '<button class="btn-f btn-sec" onclick="unlinkLocalFolder()" style="color:var(--rose)">🔓 Unlink Folder</button>'
+    : '<div style="background:rgba(200,151,63,.07);border-radius:8px;padding:.55rem .7rem;margin-bottom:.6rem;font-size:.75rem;color:var(--gold2);line-height:1.6">'
+      + '💡 Tap below → file picker opens → navigate to or <strong>create any folder</strong> on your phone (e.g. Downloads → New Folder → "Family Vault")'
+      + '</div>'
+      + '<button class="btn-f btn-prim" onclick="linkDeviceFolder()" style="background:var(--teal);border-color:var(--teal);font-size:.9rem">📁 Choose Folder on My Phone</button>'
+      + '<p style="font-size:.72rem;color:var(--text3);margin-top:.35rem;text-align:center">Works in Chrome on Android</p>';
+  const driveBtnsAndroid = gToken
+    ? '<button class="btn-f btn-sec" onclick="manualSync()" style="margin-bottom:.4rem">🔄 Sync Now</button>'
+      + '<button class="btn-f btn-sec" onclick="disconnectDrive()" style="color:var(--rose)">Disconnect Drive</button>'
+    : '<p style="font-size:.75rem;color:var(--text3);margin-bottom:.5rem;line-height:1.5">If you have been invited, tap below to connect.</p>'
+      + '<button class="btn-f btn-gdrive" onclick="gdriveAuth()">Sign in with Google Drive</button>';
+
+  const androidBox = !isIOS
+    ? '<div class="sec-title">🤖 Android Storage</div>'
+      + '<div class="bcard" style="border-color:rgba(56,178,172,.25)">'
+      + statusBar
+
+      // -- Default: browser storage info
+      + '<div style="border-radius:12px;border:1px solid ' + (storageMode==='browser'?'rgba(200,82,82,.4)':'rgba(255,255,255,.07)') + ';padding:.9rem;margin-bottom:.75rem;background:rgba(255,255,255,.02)">'
+      +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">'
+      +     '<span style="font-size:1.2rem">💾</span>'
+      +     '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Browser Storage</div>'
+      +     '<div style="font-size:.72rem;color:var(--text3)">Data stored in Chrome — always on by default</div></div>'
+      +     browserActiveBadge
+      +   '</div>'
+      +   '<p style="font-size:.76rem;color:var(--text2);line-height:1.5;margin-bottom:0">'
+      +     'Your documents are always saved here automatically. '
+      +     '<strong style="color:var(--rose)">Warning:</strong> data is lost if you clear Chrome data or reinstall. '
+      +     'Link a phone folder below to keep a permanent copy.'
+      +   '</p>'
+      + '</div>'
+
+      // -- Phone folder (user's choice)
+      + '<div style="border-radius:12px;border:1.5px solid ' + (storageMode==='folder'?'rgba(56,178,172,.6)':'rgba(56,178,172,.25)') + ';padding:.9rem;margin-bottom:.75rem;background:rgba(56,178,172,.04)">'
+      +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+      +     '<span style="font-size:1.4rem">📁</span>'
+      +     '<div style="flex:1"><div style="font-weight:700;font-size:.9rem;color:var(--text)">Your Own Phone Folder</div>'
+      +     '<div style="font-size:.72rem;color:var(--text3)">Auto-saves to a folder you choose — any location on your phone</div></div>'
+      +     folderActiveBadge
+      +   '</div>'
+      +   '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.6rem;line-height:1.5">'
+      +     'Once linked, every document you add or edit is automatically saved to your chosen folder. '
+      +     'Files are visible in your Files app, organised by category. Works fully offline.'
+      +   '</p>'
+      +   '<div style="font-size:.72rem;background:rgba(56,178,172,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:.65rem;color:var(--teal)">'
+      +     '📂 Example: <strong>Downloads / Family Vault / Passport-ID / passport.pdf</strong>'
+      +   '</div>'
+      +   folderBtns
+      + '</div>'
+
+      // -- Google Drive (invite only, dimmed)
+      + '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);padding:.9rem;opacity:.7">'
+      +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">'
+      +     '<span style="font-size:1.2rem">☁️</span>'
+      +     '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Google Drive</div>'
+      +     '<div style="font-size:.72rem;color:var(--amber)">⚠️ Invite only — not available to all users yet</div></div>'
+      +     driveActiveBadgeA
+      +   '</div>'
+      +   driveBtnsAndroid
+      + '</div>'
+
+      + '</div>'
+    : '';
+
+  // ══ BOX 2: iPHONE ═════════════════════════════════════════
+  const driveActiveBadgeI = storageMode==='drive'
+    ? '<span style="font-size:.68rem;background:rgba(72,187,120,.15);color:#48bb78;border-radius:6px;padding:.2rem .5rem;font-weight:700">✓ ACTIVE</span>'
+    : '';
+  const driveBtnsIOS = gToken
+    ? '<button class="btn-f btn-sec" onclick="manualSync()" style="margin-bottom:.4rem">🔄 Sync Now</button>'
+      + '<button class="btn-f btn-sec" onclick="disconnectDrive()" style="color:var(--rose)">Disconnect Drive</button>'
+    : '<p style="font-size:.75rem;color:var(--text3);margin-bottom:.5rem;line-height:1.5">If you have been invited, tap below to connect.</p>'
+      + '<button class="btn-f btn-gdrive" onclick="gdriveAuth()">Sign in with Google Drive</button>';
+
+  const iphoneBox = isIOS
+    ? '<div class="sec-title">🍎 iPhone Storage</div>'
+      + '<div class="bcard" style="border-color:rgba(74,127,212,.25)">'
+      + statusBar
+      + '<div style="border-radius:12px;border:1.5px solid rgba(74,127,212,.4);padding:.9rem;margin-bottom:.75rem;background:rgba(74,127,212,.04)">'
+      +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+      +     '<span style="font-size:1.4rem">📱</span>'
+      +     '<div style="flex:1"><div style="font-weight:700;font-size:.9rem;color:var(--text)">Safari/Chrome Storage</div>'
+      +     '<div style="font-size:.72rem;color:var(--text3)">All data stored privately on this iPhone</div></div>'
+      +     '<span style="font-size:.68rem;background:rgba(74,127,212,.2);color:#4a9fd4;border-radius:6px;padding:.2rem .5rem;font-weight:700;flex-shrink:0">✓ ACTIVE</span>'
+      +   '</div>'
+      +   '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.5rem;line-height:1.5">'
+      +     'Your documents are stored securely in browser storage — no internet needed. '
+      +     '<strong style="color:var(--rose)">Important:</strong> data is lost if you clear Safari/Chrome or reinstall.'
+      +   '</p>'
+      +   '<div style="background:rgba(200,151,63,.08);border-radius:8px;padding:.5rem .75rem;font-size:.75rem;color:var(--gold2);line-height:1.5">'
+      +     '💡 iPhone does not support custom folder access. Use ZIP Backup regularly and save to iCloud or Files app.'
+      +   '</div>'
+      + '</div>'
+      + '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);padding:.9rem;opacity:.75">'
+      +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">'
+      +     '<span style="font-size:1.2rem">☁️</span>'
+      +     '<div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--text)">Google Drive</div>'
+      +     '<div style="font-size:.72rem;color:var(--amber)">⚠️ Invite only — not available to all users yet</div></div>'
+      +     driveActiveBadgeI
+      +   '</div>'
+      +   driveBtnsIOS
+      + '</div>'
+      + '</div>'
+    : '';
+
+  const zipDesc = isIOS
+    ? '📱 <strong>iPhone:</strong> Save ZIP to iCloud Drive, Files app, or email it to yourself. Do this regularly — it\'s your most reliable safety net.'
+    : '🤖 <strong>Android:</strong> Great as an extra backup alongside your phone folder. Save to Google Drive, email or USB.';
+
+  // ══ BOX 3: BACKUP & RESTORE (common for all) ══════════════
+  const backupBox =
+    '<div class="sec-title">📦 Backup &amp; Restore</div>'
+    + '<div class="bcard" style="border-color:rgba(200,151,63,.2)">'
+
+    // ZIP Download
+    + '<div style="border-radius:12px;border:1px solid rgba(200,151,63,.2);padding:.9rem;margin-bottom:.75rem;background:rgba(200,151,63,.04)">'
+    +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+    +     '<div style="font-size:1.4rem">📦</div>'
+    +     '<div>'
+    +       '<div style="font-weight:700;font-size:.9rem;color:var(--text)">Download ZIP Backup</div>'
+    +       '<div style="font-size:.72rem;color:var(--text3)">All documents + files in one download</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.65rem;line-height:1.5">' + zipDesc + '</p>'
+    +   '<button class="btn-f btn-prim" onclick="downloadZIP()" style="background:var(--gold);color:#0d1b2a;border-color:var(--gold)">📦 Download ZIP Backup</button>'
+    + '</div>'
+
+    // Restore from ZIP
+    + '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.07);padding:.9rem;margin-bottom:.75rem">'
+    +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+    +     '<div style="font-size:1.4rem">📥</div>'
+    +     '<div>'
+    +       '<div style="font-weight:700;font-size:.9rem;color:var(--text)">Restore from ZIP</div>'
+    +       '<div style="font-size:.72rem;color:var(--text3)">Restore a previously downloaded ZIP</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.65rem;line-height:1.5">Use this when switching to a new phone or after accidentally clearing your data.</p>'
+    +   '<button class="btn-f btn-sec" onclick="document.getElementById(\'importZipInput\').click()">📥 Restore from ZIP</button>'
+    + '</div>'
+
+    // Export / Import JSON
+    + '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.07);padding:.9rem">'
+    +   '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">'
+    +     '<div style="font-size:1.4rem">📤</div>'
+    +     '<div>'
+    +       '<div style="font-weight:700;font-size:.9rem;color:var(--text)">Export / Import JSON</div>'
+    +       '<div style="font-size:.72rem;color:var(--text3)">Document info only — no attached files</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<p style="font-size:.77rem;color:var(--text2);margin-bottom:.65rem;line-height:1.5">Export just the document details (names, dates, notes) without the attached files.</p>'
+    +   '<button class="btn-f btn-sec" onclick="exportVault()" style="margin-bottom:.4rem">📤 Export as JSON</button>'
+    +   '<button class="btn-f btn-sec" onclick="document.getElementById(\'importInput\').click()">📥 Import from JSON</button>'
+    + '</div>'
+
+    + '</div>';
 
   // ── Assemble HTML ─────────────────────────────────────────
   document.getElementById('v-settings').innerHTML =
@@ -2033,30 +2153,11 @@ function renderSettings(){
     +   '<strong style="color:var(--text2)">Forgot PIN?</strong> tap the link on the lock screen — verified by your secret word.</p>'
     + '</div>'
 
-    + '<div class="sec-title">💾 Storage &amp; Backup</div>'
-    + '<div class="bcard" style="border-color:rgba(56,178,172,.2)">'
+    + androidBox
+    + iphoneBox
+    + backupBox
 
-    // Active status banner
-    +   '<div style="display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;background:var(--bg);border-radius:10px;margin-bottom:.85rem">'
-    +     '<div style="font-size:1.2rem">' + storageIcon + '</div>'
-    +     '<div style="flex:1"><div style="font-size:.8rem;font-weight:700;color:var(--text)">Active: ' + storageLabel + '</div>'
-    +     '<div style="font-size:.72rem;color:' + (storageMode==='browser' ? 'var(--rose)' : 'var(--text3)') + '">' + storageSubtitle + '</div></div>'
-    +   '</div>'
-
-    // Platform label
-    +   '<div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">'
-    +   (isIOS ? '🍎 iPhone — Recommended: ZIP Backup to iCloud or Files app' : '🤖 Android — Recommended: Link a Device Folder on your phone')
-    +   '</div>'
-
-    +   driveOption
-    +   folderOption
-    +   browserOption
-
-    + '<div style="height:.1rem;background:rgba(255,255,255,.06);margin:.75rem 0"></div>'
-    +   zipSection
-    + '</div>'
-
-    + '<div class="sec-title">Vault Status</div>'
+    + '<div class="sec-title">📊 Vault Status</div>'
     + '<div class="bcard">'
     +   '<div class="inforow"><span class="il">Total Documents</span><span class="iv">' + totalDocs + '</span></div>'
     +   '<div class="inforow"><span class="il">Files with Attachments</span><span class="iv">' + withFiles + '</span></div>'
@@ -2066,16 +2167,8 @@ function renderSettings(){
 
     + '<div class="sec-title">📁 Drive Folder Structure</div>'
     + '<div class="bcard">'
-    +   '<p style="font-size:.8rem;color:var(--text2);margin-bottom:.75rem">Your files are organized automatically in Google Drive:</p>'
+    +   '<p style="font-size:.8rem;color:var(--text2);margin-bottom:.75rem">When Google Drive is connected, your files are organised automatically:</p>'
     +   driveFolderRows
-    + '</div>'
-
-    + '<div class="sec-title">Import / Export</div>'
-    + '<div class="bcard">'
-    +   '<h3>📤 Export Metadata (JSON)</h3>'
-    +   '<p>Download document info only — no attached files.</p>'
-    +   '<button class="btn-f btn-sec" onclick="exportVault()">Download JSON</button>'
-    +   '<button class="btn-f btn-sec" onclick="document.getElementById(\'importInput\').click()" style="margin-top:.4rem">📥 Restore from JSON</button>'
     + '</div>'
 
     + '<div style="text-align:center;padding:1.5rem 0 .5rem;font-size:.75rem;color:var(--text3);line-height:2">'
@@ -2513,22 +2606,45 @@ async function getActiveFolderHandle() {
 async function linkDeviceFolder() {
   if (!hasFSA) {
     if (isIOS) {
-      alert('iPhone does not support folder access.\n\nYour data is safely stored in your browser. Use "Download ZIP" to make a manual backup anytime.');
+      alert('iPhone does not support folder access.\n\nUse "Download ZIP" in the Backup & Restore section to save your data.');
     } else {
-      toast('⚠️ Your browser does not support folder access. Try Chrome or Edge.');
+      alert(
+        'Folder access requires Chrome browser on Android.\n\n' +
+        'Steps:\n' +
+        '1. Open this app in Chrome (not Samsung Browser)\n' +
+        '2. Go to Settings → Android Storage\n' +
+        '3. Tap "Choose a Folder on My Phone"\n\n' +
+        'Your data is safely in browser storage until then.'
+      );
     }
     return;
   }
   try {
-    toast('📁 Choose a folder — create one called "Family Vault"…');
-    const handle = await window.showDirectoryPicker({ id:'family-vault', mode:'readwrite', startIn:'documents' });
+    // Show a helpful tip before the picker opens
+    toast('📁 Folder picker opening — choose or create any folder you like…');
+    const handle = await window.showDirectoryPicker({
+      id: 'family-vault',
+      mode: 'readwrite',
+      startIn: 'downloads' // start in Downloads — most familiar place on Android
+    });
+    const prevHandle = localFolderHandle;
     localFolderHandle = handle;
     await storeFolderHandle(handle);
     storageMode = 'folder';
-    await writeVaultToFolder(handle, true);
+    await writeVaultToFolder(handle, false);
+    const msg = prevHandle
+      ? '✅ Folder changed to "' + handle.name + '"! All documents will auto-save here.'
+      : '✅ Folder "' + handle.name + '" linked! All new documents will auto-save here.';
+    toast(msg);
     renderAll();
   } catch(e) {
-    if (e.name !== 'AbortError') toast('⚠️ ' + e.message);
+    if (e.name === 'AbortError') {
+      toast('ℹ️ No folder selected — storage unchanged.');
+    } else if (e.name === 'NotAllowedError') {
+      toast('⚠️ Permission denied. Please allow folder access when prompted.');
+    } else {
+      toast('⚠️ Could not link folder: ' + e.message);
+    }
   }
 }
 async function unlinkLocalFolder() {
@@ -3228,5 +3344,3 @@ async function shareDoc(docId) {
 </script>
 </body>
 </html>
-
-
